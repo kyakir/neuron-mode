@@ -349,10 +349,13 @@ Extract only the result itself, so the query type is lost."
                    (message "Regenerated zettel cache")))
                "neuron-refresh"))
 
+(defconst valid-id-regex
+  (rx (+ (or (char (?A . ?Z)) (char (?a . ?z)) digit (char "_-") (char "()") (char " "))) ))
+
 (defun neuron--is-valid-id (id)
   "Check whether the ID is a valid neuron zettel ID.
 Valid IDs should be strings of alphanumeric characters."
-  (string-match (rx bol (+ (or (char (?A . ?Z)) (char (?a . ?z)) digit (char "_-") (char " "))) eol) id))
+  (string-match (rx (eval valid-id-regex)) id))
 
 (defun neuron--make-new-command (&optional id title)
   (neuron-check-if-zettelkasten-exists)
@@ -796,12 +799,54 @@ The path is relative to the neuron output directory."
   (neuron--open-zettel-from-id (funcall-interactively #'neuron--get-zettel-id)))
 
 ;; (defconst neuron-link-regex
-;;   (concat "<\\(z:" thing-at-point-url-path-regexp "\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n\\ {}]*\\)?\\)>")
+;;   (concat "<\\(?1:z:"
+;; 	  thing-at-point-url-path-regexp
+;; 	  "\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n\\ {}]*\\)?\\)>"
+;; 	  "\\|"
+;; 	  "\\[\\[\\[\\(?1:"
+;; 	  thing-at-point-url-path-regexp
+;; 	  "\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n]*\\)?\\)\\]\\]\\]"
+;; 	  "\\|"
+;; 	  "\\[\\[\\(?1:"
+;; 	  thing-at-point-url-path-regexp
+;; 	  "[A-Za-z0-9-_]+\\(?:\?[^][\t\n]*\\)?\\)\\]\\]"
+;; 	  )
 ;;   "Regex matching zettel links like <URL> or <ID>.
 ;; Group 1 is the matched ID or URL.")
 
+;; (defconst neuron-link-regex
+;;   "\\[\\[\\[\\(z:[^]\t\n \"'<>[^`{}]*[^]\t\n \"'<>[^`{}.,;]+\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n\\ {}]*\\)?\\)\\]\\]\\]")
+
 (defconst neuron-link-regex
-  "\\[\\[\\[\\(z:[^]\t\n \"'<>[^`{}]*[^]\t\n \"'<>[^`{}.,;]+\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n\\ {}]*\\)?\\)\\]\\]\\]")
+  (concat ;; (regexp "<\\(?1:z:")
+      ;; (eval valid-id-regex)
+      ;; (regexp "\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n\\ {}]*\\)?\\)>")
+      ;; (regexp "\\|")
+      ;; (regexp "\\[\\[\\[\\(?1:")
+      ;; (eval thing-at-point-url-path-regexp)
+      ;; (regexp "\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n]*\\)?\\)\\]\\]\\]")
+      ;; (regexp "\\|")
+   "<\\(?1:z:"
+   valid-id-regex
+   "\\(?:\?[^][\t\n\\ {}]*\\)?\\)>"
+   "\\|"
+      "\\[\\[\\(?1:"
+      valid-id-regex
+      "\\(?:\?[^][\t\n]*\\)?\\)\\]\\]"
+      "\\|"
+      "\\[\\[\\[\\(?1:"
+      valid-id-regex
+      "\\(?:\?[^][\t\n]*\\)?\\)\\]\\]\\]"
+      ;; (regexp "[^]\t\n \"'<>[^`{}]*[^]\t\n \"'<>[^`{}.,;]+")
+      ;; ;; (eval thing-at-point-url-path-regexp)
+      ;; (regexp "[A-Za-z0-9-_]+\\(?:\?[^][\t\n]*\\)?\\)\\]\\]")
+	  )
+  "Regex matching zettel links like <URL> or <ID>.
+Group 1 is the matched ID or URL.")
+
+
+;; (defconst neuron-link-regex
+;;   "\\[\\[\\[\\(?1:z:[^]\t\n \"'<>[^`{}]*[^]\t\n \"'<>[^`{}.,;]+\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n\\ {}]*\\)?\\)\\]\\]\\]\\|<\\(?1:z:[^]\t\n \"'<>[^`{}]*[^]\t\n \"'<>[^`{}.,;]+\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n\\ {}]*\\)?\\)>\\|\\[\\[\\(?1:z:[^]\t\n \"'<>[^`{}]*[^]\t\n \"'<>[^`{}.,;]+\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n\\ {}]*\\)?\\)\\]\\]")
 
 (defun neuron--extract-id-from-partial-url (url)
   "Extract the ID from a single zettel URL."
