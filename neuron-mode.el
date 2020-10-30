@@ -795,10 +795,13 @@ The path is relative to the neuron output directory."
   (neuron-check-if-zettelkasten-exists)
   (neuron--open-zettel-from-id (funcall-interactively #'neuron--get-zettel-id)))
 
+;; (defconst neuron-link-regex
+;;   (concat "<\\(z:" thing-at-point-url-path-regexp "\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n\\ {}]*\\)?\\)>")
+;;   "Regex matching zettel links like <URL> or <ID>.
+;; Group 1 is the matched ID or URL.")
+
 (defconst neuron-link-regex
-  (concat "<\\(z:" thing-at-point-url-path-regexp "\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n\\ {}]*\\)?\\)>")
-  "Regex matching zettel links like <URL> or <ID>.
-Group 1 is the matched ID or URL.")
+  "\\[\\[\\[\\(z:[^]\t\n \"'<>[^`{}]*[^]\t\n \"'<>[^`{}.,;]+\\|[A-Za-z0-9-_]+\\(?:\?[^][\t\n\\ {}]*\\)?\\)\\]\\]\\]")
 
 (defun neuron--extract-id-from-partial-url (url)
   "Extract the ID from a single zettel URL."
